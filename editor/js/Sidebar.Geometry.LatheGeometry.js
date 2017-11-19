@@ -8,7 +8,8 @@ Sidebar.Geometry.LatheGeometry = function( editor, object ) {
 
 	var container = new UI.Row();
 
-	var parameters = object.geometry.parameters;
+	var geometry = object.geometry;
+	var parameters = geometry.parameters;
 
 	// segments
 
@@ -57,15 +58,23 @@ Sidebar.Geometry.LatheGeometry = function( editor, object ) {
 	for ( var i = 0; i < parameters.points.length; i ++ ) {
 
 		var point = parameters.points[ i ];
-		pointsList.add( createPointRow( point.x, point.z ) );
+		pointsList.add( createPointRow( point.x, point.y ) );
 
 	}
 
 	var addPointButton = new UI.Button( '+' ).onClick( function() {
 
-		var point = pointsUI[ pointsUI.length - 1 ];
+		if( pointsUI.length === 0 ){
 
-		pointsList.add( createPointRow( point.x.getValue(), point.y.getValue() ) );
+			pointsList.add( createPointRow( 0, 0 ) );
+
+		} else {
+
+			var point = pointsUI[ pointsUI.length - 1 ];
+
+			pointsList.add( createPointRow( point.x.getValue(), point.y.getValue() ) );
+
+		}
 
 		update();
 
@@ -119,23 +128,23 @@ Sidebar.Geometry.LatheGeometry = function( editor, object ) {
 
 			if ( ! pointUI ) continue;
 
-			points.push( new THREE.Vector3( pointUI.x.getValue(), 0, pointUI.y.getValue() ) );
+			points.push( new THREE.Vector2( pointUI.x.getValue(), pointUI.y.getValue() ) );
 			count ++;
 			pointUI.lbl.setValue( count );
 
 		}
 
-		var geometry = new THREE.LatheGeometry(
+		editor.execute( new SetGeometryCommand( object, new THREE[ geometry.type ](
 			points,
 			segments.getValue(),
 			phiStart.getValue() / 180 * Math.PI,
 			phiLength.getValue() / 180 * Math.PI
-		);
-
-		editor.execute( new SetGeometryCommand( object, geometry ) );
+		) ) );
 
 	}
 
 	return container;
 
 };
+
+Sidebar.Geometry.LatheBufferGeometry = Sidebar.Geometry.LatheGeometry;

@@ -2,18 +2,24 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.Uniform = function ( type, value ) {
+function Uniform( value ) {
 
-	this.type = type;
+	if ( typeof value === 'string' ) {
+
+		console.warn( 'THREE.Uniform: Type parameter is no longer needed.' );
+		value = arguments[ 1 ];
+
+	}
+
 	this.value = value;
 
 	this.dynamic = false;
 
-};
+}
 
-THREE.Uniform.prototype = {
+Uniform.prototype = {
 
-	constructor: THREE.Uniform,
+	constructor: Uniform,
 
 	onUpdate: function ( callback ) {
 
@@ -25,3 +31,6 @@ THREE.Uniform.prototype = {
 	}
 
 };
+
+
+export { Uniform };
