@@ -1,10 +1,8 @@
-var ShapeUtils;
-
 /**
  * @author zz85 / http://www.lab4games.net/zz85/blog
  */
 
-ShapeUtils = {
+var ShapeUtils = {
 
 	// calculate area of the contour polygon
 
@@ -54,15 +52,15 @@ ShapeUtils = {
 			cx = contour[ verts[ w ] ].x;
 			cy = contour[ verts[ w ] ].y;
 
-			if ( Number.EPSILON > ( ( ( bx - ax ) * ( cy - ay ) ) - ( ( by - ay ) * ( cx - ax ) ) ) ) return false;
+			if ( ( bx - ax ) * ( cy - ay ) - ( by - ay ) * ( cx - ax ) <= 0 ) return false;
 
 			var aX, aY, bX, bY, cX, cY;
 			var apx, apy, bpx, bpy, cpx, cpy;
 			var cCROSSap, bCROSScp, aCROSSbp;
 
-			aX = cx - bx;  aY = cy - by;
-			bX = ax - cx;  bY = ay - cy;
-			cX = bx - ax;  cY = by - ay;
+			aX = cx - bx; aY = cy - by;
+			bX = ax - cx; bY = ay - cy;
+			cX = bx - ax; cY = by - ay;
 
 			for ( p = 0; p < n; p ++ ) {
 
@@ -73,9 +71,9 @@ ShapeUtils = {
 					 ( ( px === bx ) && ( py === by ) ) ||
 					 ( ( px === cx ) && ( py === cy ) ) )	continue;
 
-				apx = px - ax;  apy = py - ay;
-				bpx = px - bx;  bpy = py - by;
-				cpx = px - cx;  cpy = py - cy;
+				apx = px - ax; apy = py - ay;
+				bpx = px - bx; bpy = py - by;
+				cpx = px - cx; cpy = py - cy;
 
 				// see if p is inside triangle abc
 
@@ -121,7 +119,7 @@ ShapeUtils = {
 
 			/*  remove nv - 2 vertices, creating 1 triangle every time */
 
-			var count = 2 * nv;   /* error detection */
+			var count = 2 * nv; /* error detection */
 
 			for ( v = nv - 1; nv > 2; ) {
 
@@ -143,9 +141,9 @@ ShapeUtils = {
 
 				/* three consecutive vertices in current polygon, <u,v,w> */
 
-				u = v; 	 	if ( nv <= u ) u = 0;     /* previous */
-				v = u + 1;  if ( nv <= v ) v = 0;     /* new v    */
-				w = v + 1;  if ( nv <= w ) w = 0;     /* next     */
+				u = v; if ( nv <= u ) u = 0; /* previous */
+				v = u + 1; if ( nv <= v ) v = 0; /* new v    */
+				w = v + 1; if ( nv <= w ) w = 0; /* next     */
 
 				if ( snip( contour, u, v, w, nv, verts ) ) {
 
@@ -187,13 +185,13 @@ ShapeUtils = {
 			if ( indices ) return vertIndices;
 			return result;
 
-		}
+		};
 
 	} )(),
 
 	triangulateShape: function ( contour, holes ) {
 
-		function removeDupEndPts(points) {
+		function removeDupEndPts( points ) {
 
 			var l = points.length;
 
@@ -241,8 +239,8 @@ ShapeUtils = {
 
 		function intersect_segments_2D( inSeg1Pt1, inSeg1Pt2, inSeg2Pt1, inSeg2Pt2, inExcludeAdjacentSegs ) {
 
-			var seg1dx = inSeg1Pt2.x - inSeg1Pt1.x,   seg1dy = inSeg1Pt2.y - inSeg1Pt1.y;
-			var seg2dx = inSeg2Pt2.x - inSeg2Pt1.x,   seg2dy = inSeg2Pt2.y - inSeg2Pt1.y;
+			var seg1dx = inSeg1Pt2.x - inSeg1Pt1.x, seg1dy = inSeg1Pt2.y - inSeg1Pt1.y;
+			var seg2dx = inSeg2Pt2.x - inSeg2Pt1.x, seg2dy = inSeg2Pt2.y - inSeg2Pt1.y;
 
 			var seg1seg2dx = inSeg1Pt1.x - inSeg2Pt1.x;
 			var seg1seg2dy = inSeg1Pt1.y - inSeg2Pt1.y;
@@ -291,8 +289,7 @@ ShapeUtils = {
 
 				// return real intersection point
 				var factorSeg1 = perpSeg2 / limit;
-				return	[ { x: inSeg1Pt1.x + factorSeg1 * seg1dx,
-							y: inSeg1Pt1.y + factorSeg1 * seg1dy } ];
+				return	[ { x: inSeg1Pt1.x + factorSeg1 * seg1dx, y: inSeg1Pt1.y + factorSeg1 * seg1dy } ];
 
 			} else {
 
@@ -308,7 +305,7 @@ ShapeUtils = {
 
 					if ( ( inSeg1Pt1.x !== inSeg2Pt1.x ) ||
 						 ( inSeg1Pt1.y !== inSeg2Pt1.y ) )		return [];	// they are distinct  points
-					return [ inSeg1Pt1 ];                 						// they are the same point
+					return [ inSeg1Pt1 ];	// they are the same point
 
 				}
 				// segment#1  is a single point
@@ -384,7 +381,7 @@ ShapeUtils = {
 				}
 				if ( seg1minVal <= seg2minVal ) {
 
-					if ( seg1maxVal <  seg2minVal )	return [];
+					if ( seg1maxVal < seg2minVal )	return [];
 					if ( seg1maxVal === seg2minVal )	{
 
 						if ( inExcludeAdjacentSegs )		return [];
@@ -396,7 +393,7 @@ ShapeUtils = {
 
 				} else {
 
-					if ( seg1minVal >  seg2maxVal )	return [];
+					if ( seg1minVal > seg2maxVal )	return [];
 					if ( seg1minVal === seg2maxVal )	{
 
 						if ( inExcludeAdjacentSegs )		return [];
@@ -417,9 +414,9 @@ ShapeUtils = {
 			// The order of legs is important
 
 			// translation of all points, so that Vertex is at (0,0)
-			var legFromPtX	= inLegFromPt.x - inVertex.x,  legFromPtY	= inLegFromPt.y - inVertex.y;
-			var legToPtX	= inLegToPt.x	- inVertex.x,  legToPtY		= inLegToPt.y	- inVertex.y;
-			var otherPtX	= inOtherPt.x	- inVertex.x,  otherPtY		= inOtherPt.y	- inVertex.y;
+			var legFromPtX	= inLegFromPt.x - inVertex.x, legFromPtY = inLegFromPt.y - inVertex.y;
+			var legToPtX	= inLegToPt.x	- inVertex.x, legToPtY = inLegToPt.y	- inVertex.y;
+			var otherPtX	= inOtherPt.x	- inVertex.x, otherPtY = inOtherPt.y	- inVertex.y;
 
 			// main angle >0: < 180 deg.; 0: 180 deg.; <0: > 180 deg.
 			var from2toAngle	= legFromPtX * legToPtY - legFromPtY * legToPtX;
@@ -525,7 +522,7 @@ ShapeUtils = {
 					hIdx, nextIdx, intersection;
 				for ( ihIdx = 0; ihIdx < indepHoles.length; ihIdx ++ ) {
 
-					chkHole = holes[ indepHoles[ ihIdx ]];
+					chkHole = holes[ indepHoles[ ihIdx ] ];
 					for ( hIdx = 0; hIdx < chkHole.length; hIdx ++ ) {
 
 						nextIdx = hIdx + 1; nextIdx %= chkHole.length;
@@ -558,7 +555,7 @@ ShapeUtils = {
 				counter --;
 				if ( counter < 0 ) {
 
-					console.log( "Infinite Loop! Holes left:" + indepHoles.length + ", Probably Hole outside Shape!" );
+					console.log( 'THREE.ShapeUtils: Infinite Loop! Holes left:" + indepHoles.length + ", Probably Hole outside Shape!' );
 					break;
 
 				}
@@ -576,7 +573,7 @@ ShapeUtils = {
 						holeIdx = indepHoles[ h ];
 
 						// prevent multiple checks
-						cutKey = shapePt.x + ":" + shapePt.y + ":" + holeIdx;
+						cutKey = shapePt.x + ':' + shapePt.y + ':' + holeIdx;
 						if ( failedCuts[ cutKey ] !== undefined )			continue;
 
 						hole = holes[ holeIdx ];
@@ -641,11 +638,11 @@ ShapeUtils = {
 
 		for ( i = 0, il = allpoints.length; i < il; i ++ ) {
 
-			key = allpoints[ i ].x + ":" + allpoints[ i ].y;
+			key = allpoints[ i ].x + ':' + allpoints[ i ].y;
 
 			if ( allPointsMap[ key ] !== undefined ) {
 
-				console.warn( "THREE.ShapeUtils: Duplicate point", key, i );
+				console.warn( 'THREE.ShapeUtils: Duplicate point', key, i );
 
 			}
 
@@ -667,7 +664,7 @@ ShapeUtils = {
 
 			for ( f = 0; f < 3; f ++ ) {
 
-				key = face[ f ].x + ":" + face[ f ].y;
+				key = face[ f ].x + ':' + face[ f ].y;
 
 				index = allPointsMap[ key ];
 
@@ -689,80 +686,7 @@ ShapeUtils = {
 
 		return ShapeUtils.area( pts ) < 0;
 
-	},
-
-	// Bezier Curves formulas obtained from
-	// http://en.wikipedia.org/wiki/B%C3%A9zier_curve
-
-	// Quad Bezier Functions
-
-	b2: ( function () {
-
-		function b2p0( t, p ) {
-
-			var k = 1 - t;
-			return k * k * p;
-
-		}
-
-		function b2p1( t, p ) {
-
-			return 2 * ( 1 - t ) * t * p;
-
-		}
-
-		function b2p2( t, p ) {
-
-			return t * t * p;
-
-		}
-
-		return function b2( t, p0, p1, p2 ) {
-
-			return b2p0( t, p0 ) + b2p1( t, p1 ) + b2p2( t, p2 );
-
-		};
-
-	} )(),
-
-	// Cubic Bezier Functions
-
-	b3: ( function () {
-
-		function b3p0( t, p ) {
-
-			var k = 1 - t;
-			return k * k * k * p;
-
-		}
-
-		function b3p1( t, p ) {
-
-			var k = 1 - t;
-			return 3 * k * k * t * p;
-
-		}
-
-		function b3p2( t, p ) {
-
-			var k = 1 - t;
-			return 3 * k * t * t * p;
-
-		}
-
-		function b3p3( t, p ) {
-
-			return t * t * t * p;
-
-		}
-
-		return function b3( t, p0, p1, p2, p3 ) {
-
-			return b3p0( t, p0 ) + b3p1( t, p1 ) + b3p2( t, p2 ) + b3p3( t, p3 );
-
-		};
-
-	} )()
+	}
 
 };
 

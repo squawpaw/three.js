@@ -4,6 +4,8 @@
 		<title>three.js webvr - htc vive - sculpt</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<!-- Origin Trial Token, feature = WebVR (For Chrome M62+), origin = https://threejs.org, expires = 2017-12-16 -->
+		<meta http-equiv="origin-trial" data-feature="WebVR (For Chrome M62+)" data-expires="2017-12-16" content="AvEXeg7kY84HQ60ApBlqf6zPqClJwEy499YltannXHd+qIIN8ibQQFbHDkKL/Na/L7ha4VOqsjsGHhFpI6HYfgAAAABQeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJWUjEuMU02MiIsImV4cGlyeSI6MTUxMzQ0NjE5Nn0=">
 		<style>
 			body {
 				font-family: Monospace;
@@ -21,27 +23,16 @@
 
 		<script src="../build/three.js"></script>
 
-		<script src="js/WebVR.js"></script>
-		<script src="js/effects/VREffect.js"></script>
-		<script src="js/controls/VRControls.js"></script>
-		<script src="js/ViveController.js"></script>
+		<script src="js/vr/ViveController.js"></script>
+		<script src="js/vr/WebVR.js"></script>
 
 		<script src="js/loaders/OBJLoader.js"></script>
 		<script src="js/MarchingCubes.js"></script>
 
 		<script>
 
-			if ( WEBVR.isLatestAvailable() === false ) {
-
-				document.body.appendChild( WEBVR.getMessage() );
-
-			}
-
-			//
-
 			var container;
 			var camera, scene, renderer;
-			var effect, controls;
 			var controller1, controller2;
 
 			var blob, vector;
@@ -62,17 +53,25 @@
 				info.style.top = '10px';
 				info.style.width = '100%';
 				info.style.textAlign = 'center';
-				info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - htc vive - sculpt';
+				info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - htc vive - sculpt';
 				container.appendChild( info );
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0x222222 );
 
+				var user = new THREE.Group();
+				user.position.set( 0, 1.6, 0 );
+				scene.add( user );
+
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 50 );
-				scene.add( camera );
+				user.add( camera );
 
 				var geometry = new THREE.BoxGeometry( 0.5, 0.8, 0.5 );
-				var material = new THREE.MeshStandardMaterial( { color: 0x444444, roughness: 1.0, metalness: 0.0 } );
+				var material = new THREE.MeshStandardMaterial( {
+					color: 0x444444,
+					roughness: 1.0,
+					metalness: 0.0
+				} );
 				var table = new THREE.Mesh( geometry, material );
 				table.position.y = 0.35;
 				table.position.z = 0.85;
@@ -81,13 +80,17 @@
 				scene.add( table );
 
 				var geometry = new THREE.PlaneGeometry( 4, 4 );
-				var material = new THREE.MeshStandardMaterial( { color: 0x222222, roughness: 1.0, metalness: 0.0 } );
+				var material = new THREE.MeshStandardMaterial( {
+					color: 0x222222,
+					roughness: 1.0,
+					metalness: 0.0
+				} );
 				var floor = new THREE.Mesh( geometry, material );
 				floor.rotation.x = - Math.PI / 2;
 				floor.receiveShadow = true;
 				scene.add( floor );
 
-				scene.add( new THREE.GridHelper( 10, 40, 0x111111, 0x111111 ) );
+				scene.add( new THREE.GridHelper( 20, 40, 0x111111, 0x111111 ) );
 
 				scene.add( new THREE.HemisphereLight( 0x888877, 0x777788 ) );
 
@@ -110,25 +113,23 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.domElement.style.width = ( window.innerWidth * 2 ) + 'px';
-				renderer.sortObjects = false;
-				renderer.shadowMap.enabled = true;
 				renderer.gammaInput = true;
 				renderer.gammaOutput = true;
+				renderer.shadowMap.enabled = true;
+				renderer.vr.enabled = true;
 				container.appendChild( renderer.domElement );
 
-				controls = new THREE.VRControls( camera );
-				controls.standing = true;
+				document.body.appendChild( WEBVR.createButton( renderer ) );
 
 				// controllers
 
 				controller1 = new THREE.ViveController( 0 );
-				controller1.standingMatrix = controls.getStandingMatrix();
-				scene.add( controller1 );
+				controller1.standingMatrix = renderer.vr.getStandingMatrix();
+				user.add( controller1 );
 
 				controller2 = new THREE.ViveController( 1 );
-				controller2.standingMatrix = controls.getStandingMatrix();
-				scene.add( controller2 );
+				controller2.standingMatrix = renderer.vr.getStandingMatrix();
+				user.add( controller2 );
 
 				var loader = new THREE.OBJLoader();
 				loader.setPath( 'models/obj/vive-controller/' );
@@ -158,14 +159,6 @@
 					controller2.add( controller.clone() );
 
 				} );
-
-				effect = new THREE.VREffect( renderer );
-
-				if ( WEBVR.isAvailable() === true ) {
-
-					document.body.appendChild( WEBVR.getButton( effect ) );
-
-				}
 
 				//
 
@@ -216,7 +209,7 @@
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 
-				effect.setSize( window.innerWidth, window.innerHeight );
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
 			}
 
@@ -224,8 +217,7 @@
 
 			function animate() {
 
-				effect.requestAnimationFrame( animate );
-				render();
+				renderer.animate( render );
 
 			}
 
@@ -239,22 +231,24 @@
 
 			function handleController( controller, id ) {
 
-				var gamepad = controller.getGamepad();
+				controller.update();
+
 				var pivot = controller.getObjectByName( 'pivot' );
 
-				if ( gamepad && pivot ) {
+				if ( pivot ) {
 
 					var matrix = pivot.matrixWorld;
+
 					points[ id ].position.setFromMatrixPosition( matrix );
 					transformPoint( points[ id ].position );
 
-					if ( gamepad.buttons[ 0 ].pressed ) {
+					if ( controller.getButtonState( 'thumbpad' ) ) {
 
 						blob.material.color.setHex( Math.random() * 0xffffff );
 
 					}
 
-					if ( gamepad.buttons[ 1 ].pressed ) {
+					if ( controller.getButtonState( 'trigger' ) ) {
 
 						var strength = points[ id ].strength / 2;
 
@@ -266,7 +260,7 @@
 
 					}
 
-					if ( gamepad.buttons[ 2 ].pressed && id === 0 ) {
+					if ( id === 0 && controller.getButtonState( 'grips' ) ) {
 
 						if ( points.length > 2 ) {
 
@@ -288,7 +282,7 @@
 
 					}
 
-					if ( gamepad.buttons[ 2 ].pressed && id === 1 ) {
+					if ( id === 1 && controller.getButtonState( 'grips' ) ) {
 
 						points[ id ].strength = ( Math.sin( performance.now() / 1000 ) + 1.5 ) / 20.0;
 
@@ -320,9 +314,7 @@
 
 				updateBlob();
 
-				controls.update();
-
-				effect.render( scene, camera );
+				renderer.render( scene, camera );
 
 			}
 
